@@ -1,0 +1,55 @@
+@import url(https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css);
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap");
+
+:root {
+  --white-color: #fafafb;
+  --background-color: #17171e;
+  --grey-color: #b5b5be;
+  --dark-grey-color: #292932;
+}
+
+body {
+    background-color: #e0e3e8;
+    font-family: "Rubik", sans-serif;
+}
+
+
+.main {
+  width: 100%;
+  padding: 1.2rem;
+
+}
+
+.content_main {
+  min-height: 100vh;
+  padding-top: 9vh ;
+}
+
+.content_main.active {
+  padding-top: 0 ;
+}
+
+@media screen and (min-width: 600px) {
+
+  .content_main {
+    display: flex;  
+    /* background-color: #9999e0;   */
+  }
+}
+
+
+/* search input*/
+.search-table {
+  padding: 2px;
+  float: right;
+}
+
+.search-table .ant-btn {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+a:link { text-decoration: none; }
+

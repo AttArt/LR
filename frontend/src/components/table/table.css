@@ -1,0 +1,38 @@
+.table-area{
+ 
+}
+
+.table-area table{
+    width: 100%;
+    min-width: 400px;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+thead {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: capitalize;
+
+}
+
+tr{
+    text-align: left;
+}
+
+th,
+td{
+    padding: 15px 5.5px;
+    border: 1px solid rgba(213, 213, 213, 0.59);
+    border-left: 0;
+    border-right: 0;
+}
+
+.TdTextCenter {
+  text-align: center;
+}
+
+.PaginationControlTable {
+  float: right;
+  padding: 15px;
+}

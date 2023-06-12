@@ -1,0 +1,14 @@
+.navbar {
+    background-color: #ffffff;
+  
+}
+
+.btn-nav {
+    border-color: #5a8dee !important;
+    background-color: #5a8dee !important;
+    color: #fff;
+}
+
+.shadow-md {
+    box-shadow: 0px 5px 10px rgba(90, 116, 148, 0.3);
+}
