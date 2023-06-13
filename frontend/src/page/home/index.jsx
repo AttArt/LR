@@ -2,188 +2,195 @@ import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios'
 import DataTable from 'react-data-table-component';
 import { Input } from 'antd';
-
-// import Table from '../../components/table/Table'
-// const UserTableHead = {
-//     header: [
-//         "iduser",
-//         "name",  
-//         "dept"  
-//     ]
-// }
+import styled, { keyframes } from 'styled-components';
 
 const columns = [
     {
         name: 'iduser',
-        selector: 'iduser',
+        selector: row => row.iduser,
         sortable: true,
     },
     {
         name: 'name',
-        selector: 'name',
+        selector: row => row.name,
         sortable: true,
     },
     {
         name: 'dept',
-        selector: 'dept',
+        selector: row => row.dept,
         sortable: true,
     }
 ];
 
+const rotate360 = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
 
-// const renderHead = (item, index) => <th key={index}>{item}</th>
+  to {
+    transform: rotate(360deg);
+  }
+`;
 
-// const renderBody = (item, index) => (
-//     <tr key={index} className="">
-//         <td className="">{item.iduser}</td>
-//         <td className="">{item.name}</td>
-//         <td className="">{item.dept}</td>
-//     </tr>
-// )
+const Spinner = styled.div`
+	margin: 16px;
+	animation: ${rotate360} 1s linear infinite;
+	transform: translateZ(0);
+	border-top: 2px solid grey;
+	border-right: 2px solid grey;
+	border-bottom: 2px solid grey;
+	border-left: 4px solid black;
+	background: transparent;
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+    border-color: dodgerblue;
+`;
 
 
-// const Export = ({ onExport }) => <button className="btn btn-light" claonClick={e => onExport(e.target.value)}>Export CSV</button>;
+const CustomLoader = () => (
+	<div style={{ padding: '24px',textAlign:'center' }}>
+		<Spinner />
+		<div>... Loading ...</div>
+	</div>
+);
 
+function convertArrayOfObjectsToCSV(args) {  
+    var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+    data = args.data || null;
+    if (data == null || !data.length) {
+        return null;
+    }
+
+    columnDelimiter = args.columnDelimiter || ',';
+    lineDelimiter = args.lineDelimiter || '\n';
+
+    keys = Object.keys(data[0]);
+
+    result = '';
+    result += keys.join(columnDelimiter);
+    result += lineDelimiter;
+
+    data.forEach(function(item) {
+        ctr = 0;
+        keys.forEach(function(key) {
+            if (ctr > 0) result += columnDelimiter;
+
+            result += item[key];
+            ctr++;
+        });
+        result += lineDelimiter;
+    });
+
+    return result;
+}
+
+function downloadCSV(args) {  
+    var data, filename, link;
+    var csv = convertArrayOfObjectsToCSV({
+        data: stockData
+    });
+    if (csv == null) return;
+
+    filename = args.filename || 'export.csv';
+
+    if (!csv.match(/^data:text\/csv/i)) {
+        csv = 'data:text/csv;charset=utf-8,' + csv;
+    }
+    data = encodeURI(csv);
+
+    link = document.createElement('a');
+    link.setAttribute('href', data);
+    link.setAttribute('download', filename);
+    link.click();
+}
+
+const Export = ({ onExport }) => <Button onClick={e => onExport(e.target.value)}>Export</Button>;
 
 const Index = () => {
-    const [Users, setUsers] = useState([]);
+    const { Search } = Input;
 
+    const [data, setData] = useState([]);
 
-	const [loading, setLoading] = useState(false);
-	const [totalRows, setTotalRows] = useState(0);
     const [page, setPage] = useState(1);
 	const [perPage, setPerPage] = useState(10);
 
-    // const [Userstest, setUserstest] = useState([]);
+    const [SearchData, setSearchData] = useState(data)
+    const [SearchValue, setSearchValue] = useState("nosearch")
 
-    // const fetchUsers = async () => {
-    //     await axios.get(`http://localhost:8000/api/users`).then(({data}) => {
-    //         setUsers(data.data);
-    //     })
-    // }
-
-    // const fetchtest = async () => {
-    //     await axios.get(`http://localhost:8000/api/users?page=${1}&per_page=${10}`).then(({data}) => {
-    //         setUserstest(data.data);
-    //     })
-    // }
-
-    // useEffect(() => {
-    //     fetchUsers();
-    //     fetchtest();
-
-    // }, []);
-
-    // useEffect(() => {
-    //     console.log(Userstest)
-
-    // }, [Userstest]);
-
-    const { Search } = Input;
-    const [SearchData, setSearchData] = useState(Users)
-    const [SearchStatus, setSearchStatus] = useState(false)
-    const [paginationReset, setPaginationReset] = useState(false)
+	const [loading, setLoading] = useState(false);
+	const [totalRows, setTotalRows] = useState(0);
 
     useEffect(() => {
-        setSearchData(Users);
-    }, [Users]);
+        setSearchData(data);
+
+    }, [data]);
 
     const onSearch = async (value) => {
+
+		setLoading(true);
+
         if(value == null || value == "") {
-            setSearchStatus(false)
-            fetchUsersx(page);
-            return ;
+            setSearchValue("nosearch");
+            console.log("nosearch")
+            // setPage(1)
+            // return ;
+        }else {
+            setSearchValue(value)
         }
 
-        // const filteredRows = Users.filter((row) => {
-        //     // const rowcolumm = row.iduser
-        //     return (Object.values(row).map(element => element.toLowerCase())).some(e => e.includes(value.toLowerCase()));
-        //     // return rowcolumm.toLowerCase().includes(value.toLowerCase());
-        // });
+        await axios.get(`http://localhost:8000/api/users?search=${value}&page=${page}&per_page=${perPage}`).then(({data}) => {
+            setPage(1)
+            const arr = Object.entries(data.data).map(([key, value]) => {
+                return { id: key, ...value };
+            });
 
-        await axios.get(`http://localhost:8000/api/users/${value}`).then(({data}) => {
-      
-            setUsers(data.data)
-            setTotalRows(10)
-            setSearchStatus(true)
-            setPaginationReset(true)
-
+            setData(arr);
+            setTotalRows(data.total)
         })
 
-        // setSearchData(filteredRows);
+		setLoading(false);
+
+        // await axios.get(`http://localhost:8000/api/users/${value}`).then(({data}) => {
+        //     setPage(1)
+        //     setData(data.data)
+        //     setTotalRows(data.data.total)
+        // })
+
     }
 
 
-    // function convertArrayOfObjectsToCSV(array) {
-    //     let result;
-    
-    //     const columnDelimiter = ',';
-    //     const lineDelimiter = '\n';
-    //     const keys = Object.keys(Users[0]);
-    
-    //     result = '';
-    //     result += keys.join(columnDelimiter);
-    //     result += lineDelimiter;
-    
-    //     array.forEach(item => {
-    //         let ctr = 0;
-    //         keys.forEach(key => {
-    //             if (ctr > 0) result += columnDelimiter;
-    
-    //             result += item[key];
-                
-    //             ctr++;
-    //         });
-    //         result += lineDelimiter;
-    //     });
-    
-    //     return result;
-    // }
-        
-    // function downloadCSV(array) {
-    //     const link = document.createElement('a');
-    //     let csv = convertArrayOfObjectsToCSV(array);
-    //     if (csv == null) return;
-    
-    //     const filename = 'export.csv';
-    
-    //     if (!csv.match(/^data:text\/csv/i)) {
-    //         csv = `data:text/csv;charset=utf-8,${csv}`;
-    //     }
-    
-    //     link.setAttribute('href', encodeURI(csv));
-    //     link.setAttribute('download', filename);
-    //     link.click();
-    // }
-
-	const fetchUsersx = async page => {
+	const fetchData = async page => {
 		setLoading(true);
 
-		await axios.get(`http://localhost:8000/api/users?page=${page}&per_page=${perPage}`).then(({data}) => {
-            setUsers(data.data);
+		await axios.get(`http://localhost:8000/api/users?search=${SearchValue}&page=${page}&per_page=${perPage}`).then(({data}) => {
+            
             setTotalRows(data.total);
+            const arr = Object.entries(data.data).map(([key, value]) => {
+                return { id: key, ...value };
+            });
 
+            setData(arr);
         })
 
 		setLoading(false);
 	};
 
 	const handlePageChange = page => {
-        if(paginationReset) {
-            setPage(page)
-            fetchUsersx(page);
-        } else {
-            console.log("xxxxxxxxx")
-        }
-        
-        
+        setPage(page)
+        fetchData(page);        
+
 	};
 
 	const handlePerRowsChange = async (newPerPage, page) => {
 		setLoading(true);
-
-		await axios.get(`http://localhost:8000/api/users?page=${page}&per_page=${newPerPage}`).then(({data}) => {
-            setUsers(data.data);
+		await axios.get(`http://localhost:8000/api/users?search=${SearchValue}&page=${page}&per_page=${newPerPage}`).then(({data}) => {
+            const arr = Object.entries(data.data).map(([key, value]) => {
+                return { id: key, ...value };
+            });
+            setData(arr);
+            
         })
 
 		setPerPage(newPerPage);
@@ -191,48 +198,35 @@ const Index = () => {
 	};
 
 	useEffect(() => {
-		fetchUsersx(1); // fetch page 1 of users
+		fetchData(1); 
 		
 	}, []);
 
-    // const actionsMemo = useMemo(() => <Export onExport={() => downloadCSV(SearchData)} />, []);
-
     return (
+        <div>
             <div>
-                <div>
-                    <h5>Data Users</h5>
-                    <Search className="search-table" placeholder="data search.." allowClear onChange={(event) => {onSearch(event.target.value)}} style={{ width: 200 }} />
+                <h5>Data Users</h5>
+                <Search className="search-table" placeholder="data search.." allowClear onChange={(event) => {onSearch(event.target.value)}} style={{ width: 200 }} />
 
-                    <DataTable
-                        fixedHeader={true}
-                        fixedHeaderScrollHeight={"65vh"}
-                        title="Datatable"
-                        columns={columns}
-                        data={SearchData}
-                        progressPending={loading}
-                        highlightOnHover
-                        // actions={actionsMemo}
-                        pointerOnHover
-                        // selectableRows
-                        // dense
-                        pagination
-                        paginationResetDefaultPage={paginationReset}
-                        paginationDefaultPage={page}
-                        paginationServer
-                        paginationTotalRows={totalRows}
-                        onChangeRowsPerPage={handlePerRowsChange}
-                        onChangePage={handlePageChange}
-                    />
+                <DataTable
+                    fixedHeader={true}
+                    fixedHeaderScrollHeight={"65vh"}
+                    title="Datatable"
+                    columns={columns}
+                    data={SearchData}
+                    progressPending={loading}
+                    progressComponent={<CustomLoader />}
+                    highlightOnHover
+                    pointerOnHover
+                    pagination
+                    paginationDefaultPage={page}
+                    paginationServer
+                    paginationTotalRows={totalRows}
+                    onChangeRowsPerPage={handlePerRowsChange}
+                    paginationRowsPerPageOptions={[10,25,50,100]}
+                    onChangePage={handlePageChange}
+                />
             </div>
-        {/*           
-            <Table
-                limit='5'
-                headData={UserTableHead.header}
-                renderHead={(item, index) => renderHead(item, index)}
-                bodyData={Users}
-                renderBody={(item, index) => renderBody(item, index)}
-            /> */}
-
         </div>
     );
 }

@@ -27,17 +27,31 @@ class UserController extends Controller
         //
         $page = $request->query('page');
         $perPage = $request->query('per_page');
+        $search = $request->query('search');
 
-        $User = User::select('iduser', 'name', 'dept')->orderBy('iduser', 'asc')->get();
-        $Usertotal = User::count();
-        
         if($page) {
            
             $page =  ( $page - 1 ) * $perPage;
-            $User = User::select('iduser', 'name', 'dept')->orderBy('iduser', 'asc')->skip($page)->take($perPage)->get();
+
+            if($search == "nosearch") {
+                $User = User::select('iduser', 'name', 'dept')->orderBy('iduser', 'asc')->skip($page)->take($perPage)->get();
+                $Usertotal = User::count();
+                return response()->json(['data'=> $User,'total'=>$Usertotal]);
+            }
+            // $User = User::select('iduser', 'name', 'dept')->orderBy('iduser', 'asc')->skip($page)->take($perPage)->get();
+
+            $User = User::whereRaw('LOWER(iduser) LIKE ?', ["%".strtolower($search)."%"])
+            ->orWhereRaw('LOWER(name) LIKE ?', ["%".strtolower($search)."%"])
+            ->orWhereRaw('LOWER(dept) LIKE ?',["%".strtolower($search)."%"])->orderBy('iduser', 'asc')->get();
+
+            $Usertotal = count($User);
+            $User = $User->skip($page)->take($perPage);
+           
             return response()->json(['data'=> $User,'total'=>$Usertotal]);
         }
-  
+
+        $User = User::select('iduser', 'name', 'dept')->orderBy('iduser', 'asc')->get();
+        $Usertotal = User::count();
         return response()->json(['data'=> $User,'total'=>$Usertotal]);
     }
 
@@ -71,12 +85,12 @@ class UserController extends Controller
     public function show($search)
     {
    
-        $userx = User::whereRaw('LOWER(iduser) LIKE ?', ["%".strtolower($search)."%"])
-             ->orWhereRaw('LOWER(name) LIKE ?', ["%".strtolower($search)."%"])
-             ->orWhereRaw('LOWER(dept) LIKE ?',["%".strtolower($search)."%"])
-             ->get();
+        // $userx = User::whereRaw('LOWER(iduser) LIKE ?', ["%".strtolower($search)."%"])
+        //      ->orWhereRaw('LOWER(name) LIKE ?', ["%".strtolower($search)."%"])
+        //      ->orWhereRaw('LOWER(dept) LIKE ?',["%".strtolower($search)."%"])
+        //      ->get();
 
-        return response()->json(['data'=> $userx]);
+        // return response()->json(['data'=> $userx]);
     }
 
     /**
