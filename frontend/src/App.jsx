@@ -3,13 +3,19 @@ import { useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 
 import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import 'primeflex/primeflex.css';
+import './flags.css';
+// import 'bootstrap/dist/css/bootstrap.min.css';
+// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import Home from './page/home';
 import Login from './page/Login';
 import Sidebar from './components/sidebar';
 import Topnav from './components/topnav';
+import DataTable from './page/datatable';
 
 function App() {
 
@@ -39,8 +45,7 @@ function App() {
                       />
                        
                     }
-                    <div className={`content_main ${location.pathname==="/Login" ? 'active' : ''}`}>
-                      {
+                     {
                         location.pathname==="/Login" ? null : 
                         <Sidebar  
                           isOpen = {isOpen} 
@@ -48,11 +53,15 @@ function App() {
                           location ={ {pathname:location.pathname}}
                         />
                       }
+                    <div className={`content_main ${location.pathname==="/Login" ? 'active' : ''}`}>
+                     
                       
                       <div className="main">
                         <Routes>
                           <Route exact path='/' element={<Home />}/>
                           <Route path='/Login' element={<Login />}/>
+                          <Route path='/A' element={<DataTable />}/>
+
                         </Routes>
                       </div>
                     </div>
